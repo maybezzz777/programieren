@@ -2,7 +2,16 @@ package nword2013;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import javax.swing.JColorChooser;
+import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 
 
 public class word extends javax.swing.JFrame {
@@ -10,8 +19,59 @@ public class word extends javax.swing.JFrame {
  
     public word() {
         initComponents();
-        
+        ustawMenuPlik();
     }
+    
+    private void ustawMenuPlik() {
+    JMenuItem menuOtworz = new JMenuItem("Otwórz");
+    menuOtworz.addActionListener(evt -> {
+        JFileChooser fc = new JFileChooser();
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                jEditorPane1.read(br, null);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Błąd odczytu pliku", "Błąd", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    });
+    jMenu1.add(menuOtworz);
+
+    JMenuItem menuZapisz = new JMenuItem("Zapisz");
+    menuZapisz.addActionListener(evt -> {
+        JFileChooser fc = new JFileChooser();
+        int returnVal = fc.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+                jEditorPane1.write(bw);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Błąd zapisu pliku", "Błąd", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    });
+    jMenu1.add(menuZapisz);
+
+    JMenuItem menuZakoncz = new JMenuItem("Zakończ");
+    menuZakoncz.addActionListener(evt -> System.exit(0));
+    jMenu1.add(menuZakoncz);
+}
+    
+    class StyledViewFactory implements javax.swing.text.ViewFactory {
+    @Override
+    public javax.swing.text.View create(javax.swing.text.Element elem) {
+        String kind = elem.getName();
+        if (kind != null) {
+            if (kind.equals(javax.swing.text.AbstractDocument.ContentElementName)) {
+                return new javax.swing.text.WrappedPlainView(elem);
+            } else if (kind.equals(javax.swing.text.AbstractDocument.ParagraphElementName)) {
+                return new javax.swing.text.ParagraphView(elem);
+            }
+        }
+        return new javax.swing.text.LabelView(elem);
+    }
+}
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -36,18 +96,17 @@ public class word extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(850, 600));
-        setPreferredSize(new java.awt.Dimension(850, 600));
+        setMinimumSize(new java.awt.Dimension(600, 600));
+        setPreferredSize(new java.awt.Dimension(1000, 600));
 
         jPanel1.setBackground(new java.awt.Color(54, 52, 52));
         jPanel1.setForeground(new java.awt.Color(255, 255, 255));
 
         jComboBox1.setBackground(new java.awt.Color(51, 51, 51));
-        jComboBox1.setFont(new java.awt.Font("Segoe UI Black", 0, 12)); // NOI18N
         jComboBox1.setForeground(new java.awt.Color(255, 255, 255));
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Arial", "Comic sans MS", "Century", "Consolas" }));
         jComboBox1.setFocusable(false);
-        jComboBox1.setPreferredSize(new java.awt.Dimension(129, 30));
+        jComboBox1.setPreferredSize(new java.awt.Dimension(100, 30));
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox1ActionPerformed(evt);
@@ -56,11 +115,10 @@ public class word extends javax.swing.JFrame {
         jPanel1.add(jComboBox1);
 
         jComboBox2.setBackground(new java.awt.Color(51, 51, 51));
-        jComboBox2.setFont(new java.awt.Font("Segoe UI Black", 0, 12)); // NOI18N
         jComboBox2.setForeground(new java.awt.Color(255, 255, 255));
         jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "30", "40", "50", "60", "70" }));
         jComboBox2.setFocusable(false);
-        jComboBox2.setPreferredSize(new java.awt.Dimension(72, 30));
+        jComboBox2.setPreferredSize(new java.awt.Dimension(50, 30));
         jComboBox2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBox2ActionPerformed(evt);
@@ -69,11 +127,11 @@ public class word extends javax.swing.JFrame {
         jPanel1.add(jComboBox2);
 
         jButton1.setBackground(new java.awt.Color(51, 51, 51));
-        jButton1.setFont(new java.awt.Font("Segoe UI Black", 0, 12)); // NOI18N
+        jButton1.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
         jButton1.setForeground(new java.awt.Color(255, 255, 255));
         jButton1.setText("I");
         jButton1.setFocusable(false);
-        jButton1.setPreferredSize(new java.awt.Dimension(31, 31));
+        jButton1.setPreferredSize(new java.awt.Dimension(45, 30));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -82,11 +140,11 @@ public class word extends javax.swing.JFrame {
         jPanel1.add(jButton1);
 
         jButton2.setBackground(new java.awt.Color(51, 51, 51));
-        jButton2.setFont(new java.awt.Font("Segoe UI Black", 1, 12)); // NOI18N
+        jButton2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jButton2.setForeground(new java.awt.Color(255, 255, 255));
         jButton2.setText("B");
         jButton2.setFocusable(false);
-        jButton2.setPreferredSize(new java.awt.Dimension(31, 31));
+        jButton2.setPreferredSize(new java.awt.Dimension(45, 30));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
@@ -95,11 +153,10 @@ public class word extends javax.swing.JFrame {
         jPanel1.add(jButton2);
 
         jButton4.setBackground(new java.awt.Color(51, 51, 51));
-        jButton4.setFont(new java.awt.Font("Segoe UI Black", 0, 12)); // NOI18N
         jButton4.setForeground(new java.awt.Color(255, 255, 255));
         jButton4.setText("Kolor czcionki");
         jButton4.setFocusable(false);
-        jButton4.setPreferredSize(new java.awt.Dimension(107, 31));
+        jButton4.setPreferredSize(new java.awt.Dimension(115, 30));
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton4ActionPerformed(evt);
@@ -109,16 +166,14 @@ public class word extends javax.swing.JFrame {
 
         jTextField1.setEditable(false);
         jTextField1.setBackground(new java.awt.Color(0, 0, 0));
-        jTextField1.setFont(new java.awt.Font("Segoe UI Black", 0, 12)); // NOI18N
-        jTextField1.setPreferredSize(new java.awt.Dimension(50, 25));
+        jTextField1.setPreferredSize(new java.awt.Dimension(30, 30));
         jPanel1.add(jTextField1);
 
         jButton3.setBackground(new java.awt.Color(51, 51, 51));
-        jButton3.setFont(new java.awt.Font("Segoe UI Black", 0, 12)); // NOI18N
         jButton3.setForeground(new java.awt.Color(255, 255, 255));
         jButton3.setText("Kolor tła");
         jButton3.setFocusable(false);
-        jButton3.setPreferredSize(new java.awt.Dimension(77, 31));
+        jButton3.setPreferredSize(new java.awt.Dimension(115, 30));
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
@@ -128,17 +183,15 @@ public class word extends javax.swing.JFrame {
 
         jTextField2.setEditable(false);
         jTextField2.setBackground(new java.awt.Color(255, 255, 255));
-        jTextField2.setFont(new java.awt.Font("Segoe UI Black", 0, 12)); // NOI18N
         jTextField2.setForeground(new java.awt.Color(255, 255, 255));
-        jTextField2.setPreferredSize(new java.awt.Dimension(50, 25));
+        jTextField2.setPreferredSize(new java.awt.Dimension(30, 30));
         jPanel1.add(jTextField2);
 
         jCheckBox1.setBackground(new java.awt.Color(51, 51, 51));
-        jCheckBox1.setFont(new java.awt.Font("Segoe UI Black", 0, 12)); // NOI18N
         jCheckBox1.setForeground(new java.awt.Color(255, 255, 255));
         jCheckBox1.setText("Zawijaj tekst");
         jCheckBox1.setFocusable(false);
-        jCheckBox1.setPreferredSize(new java.awt.Dimension(93, 28));
+        jCheckBox1.setPreferredSize(new java.awt.Dimension(100, 30));
         jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCheckBox1ActionPerformed(evt);
@@ -147,7 +200,6 @@ public class word extends javax.swing.JFrame {
         jPanel1.add(jCheckBox1);
 
         jButton5.setBackground(new java.awt.Color(51, 51, 51));
-        jButton5.setFont(new java.awt.Font("Segoe UI Black", 0, 12)); // NOI18N
         jButton5.setForeground(new java.awt.Color(255, 255, 255));
         jButton5.setText("Kopiuj");
         jButton5.setFocusable(false);
@@ -160,7 +212,6 @@ public class word extends javax.swing.JFrame {
         jPanel1.add(jButton5);
 
         jButton6.setBackground(new java.awt.Color(51, 51, 51));
-        jButton6.setFont(new java.awt.Font("Segoe UI Black", 0, 12)); // NOI18N
         jButton6.setForeground(new java.awt.Color(255, 255, 255));
         jButton6.setText("Wklej");
         jButton6.setFocusable(false);
@@ -173,7 +224,6 @@ public class word extends javax.swing.JFrame {
         jPanel1.add(jButton6);
 
         jButton7.setBackground(new java.awt.Color(51, 51, 51));
-        jButton7.setFont(new java.awt.Font("Segoe UI Black", 0, 12)); // NOI18N
         jButton7.setForeground(new java.awt.Color(255, 255, 255));
         jButton7.setText("Wytnij");
         jButton7.setFocusable(false);
@@ -185,6 +235,8 @@ public class word extends javax.swing.JFrame {
         });
         jPanel1.add(jButton7);
 
+        jEditorPane1.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jEditorPane1.setPreferredSize(new java.awt.Dimension(30, 30));
         jScrollPane1.setViewportView(jEditorPane1);
 
         jMenu1.setText("Plik");
@@ -245,7 +297,19 @@ public class word extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
-        // TODO add your handling code here:
+        boolean wrap = jCheckBox1.isSelected();
+    if (wrap) {
+        jEditorPane1.setEditorKit(new javax.swing.text.StyledEditorKit() {
+            @Override
+            public javax.swing.text.ViewFactory getViewFactory() {
+                return new StyledViewFactory();
+            }
+        });
+    } else {
+        // wersja bez zawijania (tekst w jednej linii)
+        jEditorPane1.setEditorKit(new javax.swing.text.StyledEditorKit());
+    }
+    jEditorPane1.repaint();
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed

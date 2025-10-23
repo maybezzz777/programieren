@@ -13,8 +13,7 @@ public class Server {
             while (true) {
                 Socket socket = serverSocket.accept();
                 ClientHandler clientHandler = new ClientHandler(socket);
-                Thread thread = new Thread(clientHandler);
-                thread.start();
+                new Thread(clientHandler).start();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -39,20 +38,33 @@ public class Server {
 
         public void run() {
             try {
-                username = in.readLine();
-                clientsMap.put(username, this);
-                clientHandlers.add(this);
+                while (true) {
+                    username = in.readLine();
+                    if (username == null) return;
 
+                    synchronized (clientsMap) {
+                        if (clientsMap.containsKey(username)) {
+                            out.println("NICK_TAKEN");
+                        } else {
+                            clientsMap.put(username, this);
+                            clientHandlers.add(this);
+                            out.println("NICK_OK");
+                            break;
+                        }
+                    }
+                }
+
+                sendUserList();
                 sendToAll(username + " dołączył do czatu.");
 
                 String message;
                 while ((message = in.readLine()) != null) {
-                    if (message.startsWith("/private")) {
+                    if (message.startsWith("/pv ")) {
                         String[] parts = message.split(" ", 3);
                         if (parts.length == 3 && clientsMap.containsKey(parts[1])) {
                             sendPrivateMessage(parts[1], parts[2]);
                         } else {
-                            out.println("Błędny format wiadomości prywatnej.");
+                            out.println("Użytkownik nie istnieje lub zły format wiadomości prywatnej.");
                         }
                     } else {
                         sendToAll(username + ": " + message);
@@ -62,11 +74,13 @@ public class Server {
                 e.printStackTrace();
             } finally {
                 try {
-                    clientsMap.remove(username);
-                    clientHandlers.remove(this);
+                    if (username != null) {
+                        clientsMap.remove(username);
+                        clientHandlers.remove(this);
+                        sendToAll(username + " opuścił czat.");
+                        sendUserList();
+                    }
                     socket.close();
-                    sendToAll(username + " opuścił czat.");
-                    sendUserList();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -74,15 +88,18 @@ public class Server {
         }
 
         private void sendToAll(String message) {
-            for (ClientHandler clientHandler : clientHandlers) {
-                clientHandler.out.println(message);
+            synchronized (clientHandlers) {
+                for (ClientHandler client : clientHandlers) {
+                    client.out.println(message);
+                }
             }
         }
 
         private void sendPrivateMessage(String recipient, String message) {
             ClientHandler recipientHandler = clientsMap.get(recipient);
             if (recipientHandler != null) {
-                recipientHandler.out.println("[Prywatna wiadomość od " + username + "]: " + message);
+                recipientHandler.out.println("[PV od " + username + "]: " + message);
+                out.println("[PV do " + recipient + "]: " + message);
             }
         }
 
@@ -91,7 +108,9 @@ public class Server {
             for (String client : clientsMap.keySet()) {
                 userList.append(client).append("\n");
             }
-            out.println(userList.toString());
+            for (ClientHandler client : clientHandlers) {
+                client.out.println(userList.toString());
+            }
         }
     }
 }

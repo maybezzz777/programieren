@@ -46,7 +46,7 @@ public class Client {
         frame.getContentPane().setBackground(bgColor);
         frame.setLayout(new CardLayout());
 
-        socket = new Socket("localhost", 12345);
+        socket = new Socket("localhost", 2974);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
 
@@ -60,13 +60,9 @@ public class Client {
         loginPanel.setBackground(bgColor);
         loginPanel.setLayout(new GridBagLayout());
 
-        JLabel title = new JLabel("Witaj w czacie!");
-        title.setForeground(textColor);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 26));
-
         JLabel prompt = new JLabel("Podaj swój nick:");
         prompt.setForeground(textColor);
-        prompt.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        prompt.setFont(new Font("Segoe UI", Font.PLAIN, 18));
 
         nameField = new JTextField(15);
         nameField.setBackground(panelColor);
@@ -83,11 +79,11 @@ public class Client {
         loginButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         loginButton.addActionListener(e -> attemptLogin());
 
+        nameField.addActionListener(e -> attemptLogin());
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
-        loginPanel.add(title, gbc);
-        gbc.gridy++;
         loginPanel.add(prompt, gbc);
         gbc.gridy++;
         loginPanel.add(nameField, gbc);
@@ -127,7 +123,7 @@ public class Client {
         messageArea.setForeground(textColor);
         messageArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         messageArea.setMargin(new Insets(10, 10, 10, 10));
-        messageArea.setEditorKit(new javax.swing.text.StyledEditorKit()); // zawijanie tekstu
+        messageArea.setEditorKit(new javax.swing.text.StyledEditorKit());
 
         JScrollPane chatScroll = new JScrollPane(messageArea);
         chatScroll.setBorder(null);
@@ -197,7 +193,7 @@ public class Client {
                 if (e.getClickCount() == 2) {
                     String selectedUser = userList.getSelectedValue();
                     if (selectedUser != null && !selectedUser.equals(username)) {
-                        messageField.setText("/pv " + selectedUser + " ");
+                        messageField.setText("/pv '" + selectedUser + "' ");
                         messageField.requestFocus();
                     }
                 }
@@ -234,37 +230,47 @@ public class Client {
     }
 
     private void appendColoredMessage(String msg) {
-    StyledDocument doc = messageArea.getStyledDocument();
-    SimpleAttributeSet style = new SimpleAttributeSet();
+        StyledDocument doc = messageArea.getStyledDocument();
+        SimpleAttributeSet style = new SimpleAttributeSet();
 
-    StyleConstants.setForeground(style, textColor);
+        StyleConstants.setForeground(style, textColor);
 
-    if (msg.contains("dołączył do czatu")) {
-        StyleConstants.setForeground(style, joinColor);
-    } else if (msg.contains("opuścił czat")) {
-        StyleConstants.setForeground(style, leaveColor); 
-    } else if (msg.toLowerCase().startsWith("[pv") || msg.toLowerCase().contains("(priv)")) {
-        StyleConstants.setForeground(style, pvColor);
+        if (msg.contains("dołączył do czatu")) {
+            StyleConstants.setForeground(style, joinColor);
+        } else if (msg.contains("opuścił czat")) {
+            StyleConstants.setForeground(style, leaveColor);
+        } else if (msg.toLowerCase().startsWith("[pv") || msg.toLowerCase().contains("(priv)")) {
+            StyleConstants.setForeground(style, pvColor);
+        }
+
+        try {
+            doc.insertString(doc.getLength(), msg + "\n", style);
+            messageArea.setCaretPosition(doc.getLength());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-
-    try {
-        doc.insertString(doc.getLength(), msg + "\n", style);
-        messageArea.setCaretPosition(doc.getLength());
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-}
-
 
     private void updateUserList(String message) {
         SwingUtilities.invokeLater(() -> {
             userListModel.clear();
+            java.util.List<String> others = new java.util.ArrayList<>();
+
             String[] lines = message.split("\n");
             for (String user : lines) {
                 if (!user.equals("Dostępni użytkownicy:") && !user.trim().isEmpty()) {
-                    userListModel.addElement(user.trim());
+                    String trimmed = user.trim();
+                    if (trimmed.equals(username)) continue;
+                    others.add(trimmed);
                 }
             }
+
+            userListModel.addElement(username);
+            java.util.Collections.sort(others, String.CASE_INSENSITIVE_ORDER);
+            for (String user : others) {
+                userListModel.addElement(user);
+            }
+
             userList.setCellRenderer(new UserListRenderer(username));
         });
     }
@@ -282,6 +288,7 @@ public class Client {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             label.setOpaque(true);
             String user = value.toString();
+
             if (user.equals(currentUser)) {
                 label.setBackground(new Color(70, 70, 70));
                 label.setForeground(new Color(0, 200, 255));
@@ -290,6 +297,7 @@ public class Client {
                 label.setBackground(new Color(45, 45, 45));
                 label.setForeground(Color.WHITE);
             }
+
             return label;
         }
     }

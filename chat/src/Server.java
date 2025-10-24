@@ -7,8 +7,8 @@ public class Server {
     private static Map<String, ClientHandler> clientsMap = new HashMap<>();
 
     public static void main(String[] args) {
-        try (ServerSocket serverSocket = new ServerSocket(12345)) {
-            System.out.println("Serwer uruchomiony na porcie 12345...");
+        try (ServerSocket serverSocket = new ServerSocket(2974)) {
+            System.out.println("Serwer dziala na porcie 2974");
 
             while (true) {
                 Socket socket = serverSocket.accept();
@@ -60,12 +60,7 @@ public class Server {
                 String message;
                 while ((message = in.readLine()) != null) {
                     if (message.startsWith("/pv ")) {
-                        String[] parts = message.split(" ", 3);
-                        if (parts.length == 3 && clientsMap.containsKey(parts[1])) {
-                            sendPrivateMessage(parts[1], parts[2]);
-                        } else {
-                            out.println("Użytkownik nie istnieje lub zły format wiadomości prywatnej.");
-                        }
+                        handlePrivateMessage(message);
                     } else {
                         sendToAll(username + ": " + message);
                     }
@@ -84,6 +79,30 @@ public class Server {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+
+        private void handlePrivateMessage(String message) {
+            String pvCommand = message.substring(4).trim();
+            String regex = "['\"]([^'\"]+)['\"]\\s+(.+)";
+            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(regex).matcher(pvCommand);
+
+            if (matcher.matches()) {
+                String recipient = matcher.group(1).trim();
+                String msg = matcher.group(2).trim();
+
+                if (recipient.equals(username)) {
+                    out.println("Nie możesz wysyłać wiadomości prywatnych do samego siebie!");
+                    return;
+                }
+
+                if (clientsMap.containsKey(recipient)) {
+                    sendPrivateMessage(recipient, msg);
+                } else {
+                    out.println("Użytkownik '" + recipient + "' nie jest dostępny.");
+                }
+            } else {
+                out.println("Niepoprawny format. Użyj: /pv 'nazwa' wiadomość");
             }
         }
 
